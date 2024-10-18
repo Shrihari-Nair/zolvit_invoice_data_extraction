@@ -5,6 +5,11 @@ import pytesseract
 from pdf2image import convert_from_path
 import re
 import os
+import easyocr
+import numpy as np
+from gemini import gemini_response
+from PIL import Image
+
 def classify_pdf(pdf_path):
     """Classify the PDF as regular, scanned, or mixed."""
     with pdfplumber.open(pdf_path) as pdf:
@@ -19,47 +24,67 @@ def classify_pdf(pdf_path):
 
 
 
-def extract_text_from_regular_pdf(pdf_path):
-    """Extract text from regular PDFs using PyPDF2."""
-    with open(pdf_path, 'rb') as file:
-        pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
-        image_folder_path = f"./artifacts/images/{pdf_name}/"
-        os.makedirs(image_folder_path, exist_ok=True)
-        reader = PyPDF2.PdfReader(file)
-        text = ""
-        for page in reader.pages:
-            text += page.extract_text()
-        for i in page.images:
-            with open(os.path.join(image_folder_path, i.name), 'wb') as f:
-                f.write(i.data)
-        print("Tables in the pdf")
-        with pdfplumber.open(pdf_path) as pdf:
-            # iterate over each page
-            for page in pdf.pages:
-                print(page.extract_tables())
-        doc = fitz.open(pdf_path)
-        print("Metadata:", doc.metadata)
+def extract_text_from_regular_pdf(pdf_path, use_gemini = True):
+
+    if use_gemini:
+        images = convert_from_path(pdf_path)
+        for image in images:
+            pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
+            snaps_folder_path = f"./artifacts/invoice_snaps/'{pdf_name}'.png"
+            image.save(snaps_folder_path, 'PNG')
+            text = gemini_response(snaps_folder_path)
+
+    else:
+        """Extract text from regular PDFs using PyPDF2."""
+        with open(pdf_path, 'rb') as file:
+            pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
+            image_folder_path = f"./artifacts/images/{pdf_name}/"
+            os.makedirs(image_folder_path, exist_ok=True)
+            reader = PyPDF2.PdfReader(file)
+            text = ""
+            for page in reader.pages:
+                text += page.extract_text()
+            for i in page.images:
+                with open(os.path.join(image_folder_path, i.name), 'wb') as f:
+                    f.write(i.data)
+            print("Tables in the pdf")
+            with pdfplumber.open(pdf_path) as pdf:
+                # iterate over each page
+                for page in pdf.pages:
+                    print(page.extract_tables())
+            doc = fitz.open(pdf_path)
+            print("Metadata:", doc.metadata)
 
     return text
 
 
-def extract_text_from_scanned_pdf(pdf_path):
+def extract_text_from_scanned_pdf(pdf_path, use_pytesseract = False, use_gemini = True):
     """Extract text from scanned PDFs using OCR."""
     images = convert_from_path(pdf_path)
     ocr_text = ""
-    for image in images:
-        ocr_text += pytesseract.image_to_string(image)
+    if use_pytesseract:
+        for image in images:
+            ocr_text += pytesseract.image_to_string(image)
+    elif use_gemini:
+        for image in images:
+            pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
+            snaps_folder_path = f"./artifacts/invoice_snaps/'{pdf_name}'.png"
+            image.save(snaps_folder_path, 'PNG')
+
+            ocr_text = gemini_response(snaps_folder_path)
+    else:
+        reader = easyocr.Reader(['en'], gpu = False)
+        for image in images:
+            image = np.array(image)
+            ocr_text = reader.readtext(image)
     return ocr_text
 
 def get_ocr_confidence(image):
     """Get OCR confidence score from the image."""
     data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
-    confidences = [int(conf) for conf in data['conf'] if conf.isdigit()]
+    confidences = [int(conf) for conf in data['conf'] if str(conf).isdigit()]
     avg_confidence = sum(confidences) / len(confidences) if confidences else 0
     return avg_confidence
-
-
-
 
 def validate_invoice_fields(text):
     """Perform basic validation on extracted fields."""
@@ -95,7 +120,7 @@ def extract_invoice_data(pdf_path):
     if pdf_type == "regular":
         text = extract_text_from_regular_pdf(pdf_path)
     else:
-        text = extract_text_from_scanned_pdf(pdf_path)
+        text = extract_text_from_scanned_pdf(pdf_path, use_pytesseract = False, use_gemini = True)
         # For mixed, apply OCR confidence checks
         images = convert_from_path(pdf_path)
         confidences = [get_ocr_confidence(img) for img in images]
@@ -115,4 +140,4 @@ def extract_invoice_data(pdf_path):
         "trusted": trust
     }
 
-extract_invoice_data('./data/Jan to Mar/INV-118_Rashu.pdf')
+extract_invoice_data('./data/Jan to Mar/INV-117_Naman.pdf')
