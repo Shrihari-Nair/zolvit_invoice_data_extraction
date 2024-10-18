@@ -1,2 +1,3 @@
 data/Jan to Mar
-artifacts/images
+artifacts/images/*
+artifacts/invoice_snaps/*
