@@ -1,0 +1,8 @@
+PyMuPDF 
+pdfplumber 
+pytesseract 
+pdf2image 
+numpy 
+scikit-learn
+ipykernel
+PyPDF2
