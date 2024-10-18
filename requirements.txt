@@ -6,3 +6,7 @@ numpy
 scikit-learn
 ipykernel
 PyPDF2
+easyocr
+numpy
+google-generativeai
+python-dotenv
