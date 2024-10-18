@@ -4,7 +4,7 @@ import PyPDF2
 import pytesseract
 from pdf2image import convert_from_path
 import re
-
+import os
 def classify_pdf(pdf_path):
     """Classify the PDF as regular, scanned, or mixed."""
     with pdfplumber.open(pdf_path) as pdf:
@@ -22,10 +22,24 @@ def classify_pdf(pdf_path):
 def extract_text_from_regular_pdf(pdf_path):
     """Extract text from regular PDFs using PyPDF2."""
     with open(pdf_path, 'rb') as file:
+        pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
+        image_folder_path = f"./artifacts/images/{pdf_name}/"
+        os.makedirs(image_folder_path, exist_ok=True)
         reader = PyPDF2.PdfReader(file)
         text = ""
         for page in reader.pages:
             text += page.extract_text()
+        for i in page.images:
+            with open(os.path.join(image_folder_path, i.name), 'wb') as f:
+                f.write(i.data)
+        print("Tables in the pdf")
+        with pdfplumber.open(pdf_path) as pdf:
+            # iterate over each page
+            for page in pdf.pages:
+                print(page.extract_tables())
+        doc = fitz.open(pdf_path)
+        print("Metadata:", doc.metadata)
+
     return text
 
 
@@ -86,6 +100,7 @@ def extract_invoice_data(pdf_path):
         images = convert_from_path(pdf_path)
         confidences = [get_ocr_confidence(img) for img in images]
         avg_confidence = sum(confidences) / len(confidences)
+    print("\n -------------- PDF CONTENT ------------\n")
     print(text)
     validation_result = validate_invoice_fields(text)
 
@@ -100,4 +115,4 @@ def extract_invoice_data(pdf_path):
         "trusted": trust
     }
 
-extract_invoice_data('./data/Jan to Mar/INV-117_Naman.pdf')
+extract_invoice_data('./data/Jan to Mar/INV-118_Rashu.pdf')
