@@ -4,3 +4,5 @@ artifacts/invoice_snaps/*
 artifacts/text_data/*
 .env
 artifacts/json_dumps/*
+__pycache__
+artifacts/ground_truth_jsons/*
