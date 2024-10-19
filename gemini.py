@@ -58,7 +58,7 @@ def gemini_response(image_path):
         "threshold": "BLOCK_MEDIUM_AND_ABOVE"
     }
     ]
-    model = genai.GenerativeModel(model_name = "gemini-1.5-flash",
+    model = genai.GenerativeModel(model_name = "gemini-1.5-pro",
                               generation_config = MODEL_CONFIG,
                               safety_settings = safety_settings)
 
