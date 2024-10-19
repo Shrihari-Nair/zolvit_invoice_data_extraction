@@ -2,8 +2,7 @@ import google.generativeai as genai
 from dotenv import load_dotenv
 import os
 from pathlib import Path
-# from PIL import Image
-# import numpy as np
+import json
 
 def image_format(image_path):
     img = Path(image_path)
@@ -164,4 +163,19 @@ if the tag does not exist, return 0.
     # user_prompt = """Show all the text visible in the image and make sure no word is missed. Create a json file such that key is the line number and value is the content of that line"""
 
     output = gemini_output(model, image_path, system_prompt, user_prompt)
-    return output
+    start_index = output.find('{')
+    print(type(output))
+    print(output)
+    output = output.strip()
+    if start_index != -1:
+        output = output[start_index:]
+        try:
+            data_dict = json.loads(output)
+            # Print the dictionary and its type
+            print(data_dict)  # This will print the dictionary format
+            print(type(data_dict))  # This will show <class 'dict'>
+            return data_dict
+        except json.JSONDecodeError as e:
+            print(f"Failed to decode JSON: {e}")
+    else:
+        print("No valid JSON found.")
