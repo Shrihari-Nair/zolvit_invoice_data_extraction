@@ -6,9 +6,10 @@ from pdf2image import convert_from_path
 import re
 import os
 import easyocr
-import numpy as np
 from gemini import gemini_response
-from PIL import Image
+from data_structuring import get_json_structure
+import json
+import glob
 
 def classify_pdf(pdf_path):
     """Classify the PDF as regular, scanned, or mixed."""
@@ -20,8 +21,6 @@ def classify_pdf(pdf_path):
                 return "regular"
     # If no text found, it is scanned or mixed
     return "scanned_or_mixed"
-
-
 
 
 def extract_text_from_regular_pdf(pdf_path, use_gemini = True):
@@ -52,31 +51,57 @@ def extract_text_from_regular_pdf(pdf_path, use_gemini = True):
                 # iterate over each page
                 for page in pdf.pages:
                     print(page.extract_tables())
+
+            with pdfplumber.open(pdf_path) as pdf:
+                # iterate over each page
+                for page in pdf.pages:
+                    # extract text
+                    text = page.extract_text()
             doc = fitz.open(pdf_path)
             print("Metadata:", doc.metadata)
+            page = doc.load_page(0)
+            text = page.get_text()
 
     return text
 
 
-def extract_text_from_scanned_pdf(pdf_path, use_pytesseract = False, use_gemini = True):
+def extract_text_from_scanned_pdf(pdf_path, use_pytesseract = True, use_gemini = True):
     """Extract text from scanned PDFs using OCR."""
     images = convert_from_path(pdf_path)
     ocr_text = ""
     if use_pytesseract:
         for image in images:
+            # config = r"--psm 11"
             ocr_text += pytesseract.image_to_string(image)
+            # ocr_text = " ".join(ocr_text.splitlines())
     elif use_gemini:
         for image in images:
             pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
             snaps_folder_path = f"./artifacts/invoice_snaps/'{pdf_name}'.png"
             image.save(snaps_folder_path, 'PNG')
-
             ocr_text = gemini_response(snaps_folder_path)
     else:
         reader = easyocr.Reader(['en'], gpu = False)
         for image in images:
-            image = np.array(image)
-            ocr_text = reader.readtext(image)
+            pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
+            snaps_folder_path = f"./artifacts/invoice_snaps/'{pdf_name}'.png"
+            image.save(snaps_folder_path, 'PNG')
+            ocr_text = reader.readtext(snaps_folder_path)
+            extracted_text = []
+            prev_cordinate = 0
+            new_text = ""
+            for (bbox, text, prob) in ocr_text:
+                print((bbox, text))
+                if abs(prev_cordinate - bbox[0][1]) < 30:
+                    new_text += " " + text
+                else:
+                    extracted_text.append(new_text)
+                    new_text = ""
+                    new_text += " " + text
+                prev_cordinate = bbox[0][1]
+                # extracted_text.append((bbox[0][1],text))
+            ocr_text = "\n".join(extracted_text)
+
     return ocr_text
 
 def get_ocr_confidence(image):
@@ -115,29 +140,62 @@ def trust_determination(ocr_confidence, validation_result):
 def extract_invoice_data(pdf_path):
     """Main function to classify, extract, and validate invoice data."""
     pdf_type = classify_pdf(pdf_path)
-    print(pdf_type)
-    avg_confidence = 0
-    if pdf_type == "regular":
-        text = extract_text_from_regular_pdf(pdf_path)
+    print("PDF TYPE: ",pdf_type)
+    # avg_confidence = 0
+    if pdf_type != "regular":
+        text = extract_text_from_regular_pdf(pdf_path, use_gemini = False)
     else:
-        text = extract_text_from_scanned_pdf(pdf_path, use_pytesseract = False, use_gemini = True)
+        text = extract_text_from_scanned_pdf(pdf_path, use_pytesseract = False, use_gemini = False)
         # For mixed, apply OCR confidence checks
-        images = convert_from_path(pdf_path)
-        confidences = [get_ocr_confidence(img) for img in images]
-        avg_confidence = sum(confidences) / len(confidences)
+        # images = convert_from_path(pdf_path)
+        # confidences = [get_ocr_confidence(img) for img in images]
+        # avg_confidence = sum(confidences) / len(confidences)
     print("\n -------------- PDF CONTENT ------------\n")
     print(text)
-    validation_result = validate_invoice_fields(text)
+    if not text:
+        return
+    pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
+    # text_data_path = f"./artifacts/text_data/{pdf_name}.txt"
+    # with open(text_data_path, 'w', encoding='utf-8') as file:
+    #     file.write(text)
 
-    if pdf_type != "regular":
-        trust = trust_determination(avg_confidence, validation_result)
-    else:
-        trust = validation_result['valid']
     
-    return {
-        "pdf_type": pdf_type,
-        "extracted_data": validation_result,
-        "trusted": trust
-    }
+    # json_data = extract_invoice_data(text)
+    # print(json_data)
+    # json_data = get_json_structure(text)
+    # json_data = text
+    # json_path = f"./artifacts/json_dumps/{pdf_name}.json"
+    # with open(json_path, 'w') as json_file:
+    #     json.dump(json_data, json_file, indent=4)
+
+
+    # with open(json_path, 'r') as json_file:
+    #     data = json.load(json_file)
+    # # Printing the JSON data
+    # print(json.dumps(data, indent=4))
+
+
+    # validation_result = validate_invoice_fields(text)
+
+    # if pdf_type != "regular":
+    #     trust = trust_determination(avg_confidence, validation_result)
+    # else:
+    #     trust = validation_result['valid']
+    
+    # return {
+    #     "pdf_type": pdf_type,
+    #     "extracted_data": validation_result,
+    #     "trusted": trust
+    # }
+
 
 extract_invoice_data('./data/Jan to Mar/INV-117_Naman.pdf')
+
+# dir_path = "./data/Jan to Mar"
+# pdf_pattern = os.path.join(dir_path, '*.pdf')
+# # Get a list of all PDF files in the directory
+# pdf_files = glob.glob(pdf_pattern)
+# # Loop through each PDF file and process it
+# for pdf_file in pdf_files:
+#     print(pdf_file.split("/")[-1])
+#     extract_invoice_data(pdf_file)
