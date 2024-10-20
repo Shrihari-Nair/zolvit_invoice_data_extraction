@@ -2,6 +2,8 @@ import os
 import json
 from difflib import SequenceMatcher
 import argparse
+from utils import load_json_string
+import Levenshtein
 
 def compute_average_overall_accuracy(pdf_type):
     total_accuracy = 0
@@ -29,20 +31,13 @@ def compute_average_overall_accuracy(pdf_type):
     else:
         return total_accuracy / count
 
-
-def load_json_string(file_path):
-    """Load JSON data from a file where the data is stored as a string."""
-    with open(file_path, 'r') as file:
-        json_string = file.read()  # Read the file content
-    return json.loads(json_string)  # Convert string to JSON
-
-
 def compare_fields(gt_value, pred_value):
     if gt_value is None or pred_value is None:
         return 0  # Return 0 if either value is None
 
     # Calculate similarity ratio
     similarity = SequenceMatcher(None, str(gt_value), str(pred_value)).ratio()
+    # similarity = Levenshtein.distance(gt_value, pred_value)
     return similarity  # Returns a value between 0 and 1
 
 
@@ -113,10 +108,6 @@ def compare_json(ground_truth, predicted):
 
     return field_accuracy, overall_accuracy
 
-def load_json(file_path):
-    """Helper function to load a JSON file from a given path."""
-    with open(file_path, 'r') as file:
-        return json.load(file)
 
 def compare_jsons_in_directories(ground_truth_dir, predicted_dir, pdf_type):
     """Compare all JSON files with the same names from two directories."""
