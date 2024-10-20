@@ -7,7 +7,7 @@ import re
 import os
 import easyocr
 from gemini import gemini_response
-from data_structuring import get_json_structure, get_json_structure_for_scanned_pdf
+from json_structure import get_json_structure_for_regular_pdf, get_json_structure_for_scanned_pdf
 import json
 import glob
 
@@ -165,7 +165,7 @@ def extract_invoice_data(pdf_path):
     json_data = text
     if pdf_type == "regular":
         if not use_gemini:
-            json_data = get_json_structure(text)
+            json_data = get_json_structure_for_regular_pdf(text)
         json_path = f"./artifacts/json_dumps/scanned_pdf_jsons/{pdf_name}.json"
         with open(json_path, 'w') as json_file:
             json.dump(json_data, json_file, indent=4)
