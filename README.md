@@ -2,6 +2,7 @@
 ## Setup 
 1. Install conda and create a virtual environment
 2. Run the following command : `pip install requirements.txt`. Ensure that the environment variables for `pytesseract` and `pdf2image` are added to the system's PATH.
+3. Enter API Key in `.env` folder if you want to Gemini API.
 
 ## Repository Outline
 ```
@@ -42,3 +43,17 @@
 - **`trust_determination.py`**: Evaluates the quality of the extraction by cross-verifying the extracted data based on invoice logic and calculating various metrics present in the PDF.
 - **`gemini.py`**: Demonstrates how large language models (LLMs) can consistently capture and structure data in an alternate manner.
 - **`artifacts` folder**: Stores intermediate outputs such as extracted texts, images and `json` files containing accuracy values for each PDF.
+
+## Data Extraction
+1. Store ground truth json files in `artifacts/ground_truth_jsons`
+2. Store the PDFs in `data folder` for text extraction.
+3. Run `python main.py` to extract text and store it in `artifacts/json_dumps`. 
+4. Intermediate outputs are stored in `artifacts/images`, `artifacts/invoice_snaps` and `artifacts/text_data`.
+
+## Accuracy check
+1. Run `python accuracy_check.py` to compare ground truths to the extracted jsons. 
+2. The accuracy report for each PDF is stored in `artifacts/accuracy_values`
+
+## Trust determination
+1. Run `python trust_determination.py` for checking whether the extracted texts can be trusted.
+2. The report will be printed in the console itself. 
