@@ -1,6 +1,7 @@
 import json
 import re
 import os
+from utils import get_items_list
 
 def is_close(a, b, tolerance=1e-2):  # Set tolerance to 0.01 (1 cent)
     return abs(a - b) < tolerance
@@ -22,7 +23,12 @@ def validate_invoice_data(data):
         if 'Rate / Item' not in item:
             report.append(f"Item {item.get('Item Number', 'Unknown')}: Rate / Item key is missing.")
             continue
-        
+        print(item["Item Name"])
+        if str(item["Item Name"]) in get_items_list():
+            report.append(f"Item {item['Item Number']}: Item Name condition fulfilled.")
+        else:
+            report.append(f"Item {item['Item Number']}: Item Name condition failed.")
+
         # Extract relevant values, ensuring proper conversion
         base_rate = float(str(item['Rate / Item']['Base Rate']).replace(",", "")) if 'Base Rate' in item['Rate / Item'] else None
         discounted_rate = float(str(item['Rate / Item']['Discounted Rate']).replace(",", "")) if 'Discounted Rate' in item['Rate / Item'] else None
@@ -100,7 +106,7 @@ def load_json_from_file(file_path):
 
 # Example usage
 directory_path = './artifacts/json_dumps/regular_pdf_jsons'  # Change this to your directory
-json_filename = 'INV-121_Jitesh Soni.json'  # Change this to your specific JSON file name
+json_filename = 'INV-117_Naman.json'  # Change this to your specific JSON file name
 file_path = os.path.join(directory_path, json_filename)
 
 try:
