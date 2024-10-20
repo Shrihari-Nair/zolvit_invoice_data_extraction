@@ -2,7 +2,7 @@
 ## Setup 
 1. Install conda and create a virtual environment
 2. Run the following command : `pip install requirements.txt`. Ensure that the environment variables for `pytesseract` and `pdf2image` are added to the system's PATH.
-3. Enter API Key in `.env` folder if you want to Gemini API.
+3. Enter API Key in `.env` folder if you want to use Gemini API for data extraction.
 
 ## Repository Outline
 ```
