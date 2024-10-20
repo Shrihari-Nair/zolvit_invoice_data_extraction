@@ -1,4 +1,7 @@
 # Zolvit Invoice Data Extraction 
+
+## Report
+The drive link of the report is available [here](https://drive.google.com/drive/folders/1cmJV_mq7puPGfpuc1Y0tH-97zEge0dYc?usp=sharing)
 ## Setup 
 1. Install conda and create a virtual environment
 2. Run the following command : `pip install requirements.txt`. Ensure that the environment variables for `pytesseract` and `pdf2image` are added to the system's PATH.
@@ -57,5 +60,3 @@
 1. Run `python trust_determination.py` for checking whether the extracted texts can be trusted.
 2. The report will be printed in the console itself. 
 
-## Report
-The drive link of the report is available [here](https://drive.google.com/drive/folders/1cmJV_mq7puPGfpuc1Y0tH-97zEge0dYc?usp=sharing)
