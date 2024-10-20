@@ -6,3 +6,4 @@ artifacts/text_data/*
 artifacts/json_dumps/*
 __pycache__
 artifacts/ground_truth_jsons/*
+artifacts/accuracy_values/*
