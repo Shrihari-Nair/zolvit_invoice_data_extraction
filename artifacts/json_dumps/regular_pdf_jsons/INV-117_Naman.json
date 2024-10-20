@@ -1,0 +1,83 @@
+{
+    "company_name": "UNCUE DERMACARE PRIVATE LIMITED",
+    "gst_number": "23AADCU2395N1ZY",
+    "address": "KARUNA GUPTA KURELE, 1st Floor S.P Bungalow Ke Pichhe, Shoagpur Shahdol, Shahdol Shahdol, MADHYA PRADESH, 484001",
+    "mobile_number": "+91 8585960963",
+    "email": "ruhi@dermaq.in",
+    "invoice_number": "INV-117",
+    "invoice_date": "01 Feb 2024",
+    "due_date": "29 Jan 2024",
+    "customer_details": "Naman",
+    "place_of_supply": "23-MADHYA PRADESH",
+    "items": [
+        {
+            "Item Number": "1",
+            "Item Name": "Kera M 5% Solution ",
+            "Rate / Item": {
+                "Base Rate": "492.86",
+                "Discounted Rate": "616.07",
+                "Discount": "-20%"
+            },
+            "Qty": "1 BTL",
+            "Taxable Value": "492.86",
+            "Tax Amount": {
+                "Amount": "59.14",
+                "Percentage": "12%"
+            },
+            "Amount": "552.00"
+        },
+        {
+            "Item Number": "2",
+            "Item Name": "Arachitol Nano (60k) 4*5ml  ",
+            "Rate / Item": {
+                "Base Rate": "299.58",
+                "Discounted Rate": "340.43",
+                "Discount": "-12%"
+            },
+            "Qty": "3 BTL",
+            "Taxable Value": "898.73",
+            "Tax Amount": {
+                "Amount": "107.85",
+                "Percentage": "12%"
+            },
+            "Amount": "1,006.58"
+        },
+        {
+            "Item Number": "3",
+            "Item Name": "Neurobion Forte - 30 tablets   ",
+            "Rate / Item": {
+                "Base Rate": "30.58",
+                "Discounted Rate": "34.75",
+                "Discount": "-12%"
+            },
+            "Qty": "3 STRP",
+            "Taxable Value": "91.73",
+            "Tax Amount": {
+                "Amount": "16.51",
+                "Percentage": "18%"
+            },
+            "Amount": "108.24"
+        }
+    ],
+    "taxable_amount": "1,483.32",
+    "cgst_6": "83.50",
+    "sgst_6": "83.50",
+    "cgst_9": "8.26",
+    "sgst_9": "8.26",
+    "igst_12": 0,
+    "igst_18": 0,
+    "round_off": "0.18",
+    "total": "1,667.00",
+    "total_discount": "290.02",
+    "total_items_qty": {
+        "Total Items": "3",
+        "Total Qty": "7.000"
+    },
+    "total_in_words": "INR One Thousand, Six Hundred And Sixty-Seven Rupees Only.",
+    "bank_details": {
+        "Bank Name": "Kotak Mahindra Bank",
+        "Account Number": "1146860541",
+        "IFSC Code": "kkbk0000725",
+        "Branch": "PUNE - CHINCHWAD"
+    }
+}
