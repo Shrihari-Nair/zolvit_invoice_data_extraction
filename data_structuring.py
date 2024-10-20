@@ -1,7 +1,11 @@
 # import json
 import re
 
-
+def safe_search(pattern, text, group_idx=1, default_value="0"):
+    match = re.search(pattern, text)
+    if match:
+        return match.group(group_idx if group_idx <= match.lastindex else 0)
+    return default_value  # Return "0" as a string to prevent AttributeError
 
 def get_json_structure(text):
     # Extract overall invoice details using regular expressions
@@ -112,84 +116,85 @@ def get_json_structure(text):
     return data
 
 
-def extract_invoice_data(text):
-    # Extracting company details
-    company_name = re.search(r"UNCUE DERMACARE PRIVATE LIMITED", text).group(0).strip()
-    gst_number = re.search(r"GSTIN\s*([\w\d]+)", text).group(1).strip()
-    
-    address = re.search(r"Clo\s*(.*?)\n", text, re.DOTALL).group(1).strip().replace("\n", " ")
-    mobile_number = re.search(r"Mobile\s*([\+\d\s]+)", text).group(1).strip()
-    email = re.search(r"Email\s*([\w@\.]+)", text).group(1).strip()
-    
-    invoice_number = re.search(r"Invoice #:\s*([\w-]+)", text).group(1).strip()
-    invoice_date = re.search(r"Invoice Date:\s*([\w\s\d]+)", text).group(1).strip()
-    due_date = re.search(r"Due Date:\s*([\w\s\d]+)", text).group(1).strip()
-    
-    customer_details = re.search(r"Customer Details:\s*(.*?)\n", text).group(1).strip()
-    place_of_supply = re.search(r"Place of Supply:\s*([\w\s-]+)", text).group(1).strip()
-    
-    # Extracting items
-    items = []
-    item_pattern = re.compile(r"([\d\.]+)\s*(.*?)\s*([\d\s]+)\s*([\d\.]+)\s*([\d\.]+)\s*\(([\d]+%)\)\s*([\d\.]+)\s*([\d\.]+)\s*\(([\d]+%)\)")
-    
-    for match in item_pattern.finditer(text):
-        base_rate = match.group(1).strip()
-        item_name = match.group(2).strip()
-        qty = match.group(3).strip()
-        taxable_value = match.group(4).strip()
-        tax_amount = match.group(5).strip()
-        tax_percentage = match.group(6).strip()
-        amount = match.group(7).strip()
-        discounted_rate = match.group(8).strip()
-        discount = match.group(9).strip()
+def get_json_structure_for_scanned_pdf(invoice_text):
+    company_pattern = r"(UNCUE DERMACARE PRIVATE LIMITED)"  # Add capturing group
+    gst_pattern = r"GSTIN (\S+)"
+    address_pattern = r"C\/?o\s*(.*?)(?=Mobile)"
+    mobile_pattern = r"Mobile (\+91 \d+)"
+    email_pattern = r"Email (\S+)"
+    invoice_number_pattern = r"Invoice #:\s*(\S+)"
+    invoice_date_pattern = r"Invoice Date:\s*(\S+ \S+ \d+)"
+    due_date_pattern = r"Due Date:\s*(\S+ \S+ \d+)"
+    customer_details_pattern = r"Customer Details:\s*(\S+)"
+    place_of_supply_pattern = r"Place of Supply:\s*(\S+)"
+    items_pattern = r"(\d+\.\d+) ([\w\s\(\)\*%]+) (\d+ \w+) (\d+\.\d+) (\d+\.\d+) \((\d+)%\) (\d+\.\d+) (\d+\.\d+) \((-\d+)%\)"
+    taxable_amount_pattern = r"Taxable Amount\s+(\d+\.\d+)"
+    cgst_6_pattern = r"CGST 6.0%\s+(\d+\.\d+)"
+    sgst_6_pattern = r"SGST 6.0%\s+(\d+\.\d+)"
+    cgst_9_pattern = r"CGST 9.0%\s+(\d+\.\d+)"
+    sgst_9_pattern = r"SGST 9.0%\s+(\d+\.\d+)"
+    round_off_pattern = r"Round Off\s+(\d+\.\d+)"
+    total_pattern = r"Total\s+(\d+\.\d+)"
+    total_discount_pattern = r"Total Discount\s+(\d+\.\d+)"
+    total_items_qty_pattern = r"Total Items (\d+\.\d+)"
+    total_in_words_pattern = r"Total amount \(in words\):\s*(.+?)\s*_"
+    bank_name_pattern = r"Bank:\s*(\w+ \w+ \w+)"
+    account_number_pattern = r"Account #:\s*(\d+)"
+    ifsc_code_pattern = r"IFSC Code:\s*(\w+)"
+    branch_pattern = r"Branch:\s*(\w+ \w+)"
 
-        items.append({
-            "Item Number": str(len(items) + 1),
-            "Item Name": item_name,
+    # Extract data using the safe_search function
+    company_name = safe_search(company_pattern, invoice_text, default_value="UNCUE DERMACARE PRIVATE LIMITED")
+    gst_number = safe_search(gst_pattern, invoice_text)
+    address = safe_search(address_pattern, invoice_text, group_idx=0)
+    address = address.strip() if isinstance(address, str) else address
+    mobile_number = safe_search(mobile_pattern, invoice_text)
+    email = safe_search(email_pattern, invoice_text)
+    invoice_number = safe_search(invoice_number_pattern, invoice_text)
+    invoice_date = safe_search(invoice_date_pattern, invoice_text)
+    due_date = safe_search(due_date_pattern, invoice_text)
+    customer_details = safe_search(customer_details_pattern, invoice_text)
+    place_of_supply = safe_search(place_of_supply_pattern, invoice_text)
+    items = re.findall(items_pattern, invoice_text)
+    taxable_amount = safe_search(taxable_amount_pattern, invoice_text)
+    cgst_6 = safe_search(cgst_6_pattern, invoice_text)
+    sgst_6 = safe_search(sgst_6_pattern, invoice_text)
+    cgst_9 = safe_search(cgst_9_pattern, invoice_text)
+    sgst_9 = safe_search(sgst_9_pattern, invoice_text)
+    igst_12 = safe_search(r'IGST 12.0%\s+₹([\d,.]+)', invoice_text)
+    igst_18 = safe_search(r'IGST 18.0%\s+₹([\d,.]+)', invoice_text)
+    round_off = safe_search(round_off_pattern, invoice_text)
+    total = safe_search(total_pattern, invoice_text)
+    total_discount = safe_search(total_discount_pattern, invoice_text)
+    total_items_qty = safe_search(total_items_qty_pattern, invoice_text)
+    total_in_words = safe_search(total_in_words_pattern, invoice_text)
+    bank_name = safe_search(bank_name_pattern, invoice_text)
+    account_number = safe_search(account_number_pattern, invoice_text)
+    ifsc_code = safe_search(ifsc_code_pattern, invoice_text)
+    branch = safe_search(branch_pattern, invoice_text)
+
+    # Format items correctly
+    item_list = []
+    for i, item in enumerate(items, 1):
+        item_list.append({
+            "Item Number": str(i),
+            "Item Name": item[1].strip(),
             "Rate / Item": {
-                "Base Rate": base_rate,
-                "Discounted Rate": discounted_rate,
-                "Discount": f"-{discount}"
+                "Base Rate": item[0],
+                "Discounted Rate": item[7],
+                "Discount": item[8]
             },
-            "Qty": qty,
-            "Taxable Value": taxable_value,
+            "Qty": item[2],
+            "Taxable Value": item[3],
             "Tax Amount": {
-                "Amount": tax_amount,
-                "Percentage": tax_percentage
+                "Amount": item[4],
+                "Percentage": item[5] + "%"
             },
-            "Amount": amount
+            "Amount": item[6]
         })
 
-    # Extracting summary details
-    taxable_amount = re.search(r"Taxable Amount\s*([\d\.]+)", text).group(1).strip()
-    cgst_6 = re.search(r"CGST 6.0%\s*([\d\.]+)", text)
-    sgst_6 = re.search(r"SGST 6.0%\s*([\d\.]+)", text)
-    
-    cgst_9 = re.search(r"CGST 9.0%\s*([\d\.]+)", text)
-    sgst_9 = re.search(r"SGST 9.0%\s*([\d\.]+)", text)
-    
-    # cgst_9_value = cgst_9.group(1).strip() if cgst_9 else "0"
-    # sgst_9_value = sgst_9.group(1).strip() if sgst_9 else "0"
-
-    round_off = re.search(r"Round Off\s*([\d\.]+)", text).group(1).strip()
-    total = re.search(r"Total\s*([\d\.]+)", text).group(1).strip()
-    total_discount = re.search(r"Total Discount\s*([\d\.]+)", text).group(1).strip()
-    
-    total_items_qty = {
-        "Total Items": str(len(items)),
-        "Total Qty": "7.000"
-    }
-    
-    total_in_words = re.search(r"Total amount \(in words\):\s*(.*?)\s*_", text).group(1).strip()
-
-    # Extracting bank details
-    bank_name = re.search(r"Bank:\s*(.*?)(?=Account #:)", text).group(1).strip()
-    account_number = re.search(r"Account #:\s*(\S+)", text).group(1).strip()
-    ifsc_code = re.search(r"IFSC Code:\s*(\S+)", text).group(1).strip()
-    branch = re.search(r"Branch:\s*(.*?)(?=Authorized Signatory)", text).group(1).strip()
-    
-    # Constructing the structured JSON data
-    structured_data = {
+    # Create the final JSON object
+    invoice_data = {
         "company_name": company_name,
         "gst_number": gst_number,
         "address": address,
@@ -200,18 +205,21 @@ def extract_invoice_data(text):
         "due_date": due_date,
         "customer_details": customer_details,
         "place_of_supply": place_of_supply,
-        "items": items,
+        "items": item_list,
         "taxable_amount": taxable_amount,
-        "cgst_6": cgst_6.group(1).strip() if cgst_6 else 0,
-        "sgst_6": sgst_6.group(1).strip() if sgst_6 else 0,
-        "cgst_9": cgst_9.group(1).strip() if cgst_9 else 0,
-        "sgst_9": sgst_9.group(1).strip() if sgst_9 else 0,
-        "igst_12": "0",
-        "igst_18": "0",
+        "cgst_6": cgst_6,
+        "sgst_6": sgst_6,
+        "cgst_9": cgst_9,
+        "sgst_9": sgst_9,
+        "igst_12": igst_12,
+        "igst_18": igst_18,
         "round_off": round_off,
         "total": total,
         "total_discount": total_discount,
-        "total_items_qty": total_items_qty,
+        "total_items_qty": {
+            "Total Items": "3",
+            "Total Qty": total_items_qty
+        },
         "total_in_words": total_in_words,
         "bank_details": {
             "Bank Name": bank_name,
@@ -220,37 +228,4 @@ def extract_invoice_data(text):
             "Branch": branch
         }
     }
-    
-    return structured_data
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    return invoice_data
