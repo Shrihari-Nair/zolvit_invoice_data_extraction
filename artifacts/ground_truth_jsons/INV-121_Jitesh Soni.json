@@ -1,0 +1,67 @@
+{
+    "company_name": "UNCUE DERMACARE PRIVATE LIMITED",
+    "gst_number": "23AADCU2395N1ZY",
+    "address": "C/o KARUNA GUPTA KURELE, 1st Floor\nS.P Bungalow Ke Pichhe, Shoagpur Shahdol, Shahdol\nShahdol, MADHYA PRADESH, 484001",
+    "mobile_number": "+91 8585960963",
+    "email": "ruhi@dermaq.in",
+    "invoice_number": "INV-121",
+    "invoice_date": "29 Jan 2024",
+    "due_date": "29 Jan 2024",
+    "customer_details": "Jitesh Soni",
+    "place_of_supply": "27-MAHARASHTRA",
+    "items": [
+        {
+            "Item Number": "1",
+            "Item Name": "Acne-UV Gel - spf 50 (50 gm)",
+            "Rate / Item": {
+                "Base Rate": "775.42",
+                "Discounted Rate": "581.57",
+                "Discount": "-25%"
+            },
+            "Qty": "1 PAC",
+            "Taxable Value": "581.57",
+            "Tax Amount": {
+                "Amount": "104.68",
+                "Percentage": "18%"
+            },
+            "Amount": "686.25"
+        },
+        {
+            "Item Number": "2",
+            "Item Name": "Arachitol Nano (60k) 4*5ml",
+            "Rate / Item": {
+                "Base Rate": "340.43",
+                "Discounted Rate": "289.36",
+                "Discount": "-15%"
+            },
+            "Qty": "1 BTL",
+            "Taxable Value": "289.36",
+            "Tax Amount": {
+                "Amount": "34.72",
+                "Percentage": "12%"
+            },
+            "Amount": "324.09"
+        }
+    ],
+    "taxable_amount": "870.93",
+    "cgst_6": "0",
+    "sgst_6": "0",
+    "cgst_9": "0",
+    "sgst_9": "0",
+    "igst_12": "34.72",
+    "igst_18": "104.68",
+    "round_off": "-0.34",
+    "total": "1,010.00",
+    "total_discount": "285.94",
+    "total_items_qty": {
+        "Total Items": "2",
+        "Total Qty": "2.000"
+    },
+    "total_in_words": "INR One Thousand And Ten Rupees Only.",
+    "bank_details": {
+        "Bank Name": "Kotak Mahindra Bank",
+        "Account Number": "1146860541",
+        "IFSC Code": "kkbk0000725",
+        "Branch": "PUNE - CHINCHWAD"
+    }
+}
