@@ -7,7 +7,7 @@ import re
 import os
 import easyocr
 from gemini import gemini_response
-from data_structuring import get_json_structure
+from data_structuring import get_json_structure, get_json_structure_for_scanned_pdf
 import json
 import glob
 
@@ -139,40 +139,47 @@ def trust_determination(ocr_confidence, validation_result):
 
 def extract_invoice_data(pdf_path):
     """Main function to classify, extract, and validate invoice data."""
+    use_gemini = False
     pdf_type = classify_pdf(pdf_path)
     print("PDF TYPE: ",pdf_type)
     # avg_confidence = 0
-    if pdf_type != "regular":
-        text = extract_text_from_regular_pdf(pdf_path, use_gemini = False)
+    if pdf_type == "regular":
+        text = extract_text_from_regular_pdf(pdf_path, use_gemini = use_gemini)
     else:
         text = extract_text_from_scanned_pdf(pdf_path, use_pytesseract = False, use_gemini = False)
+
         # For mixed, apply OCR confidence checks
         # images = convert_from_path(pdf_path)
         # confidences = [get_ocr_confidence(img) for img in images]
         # avg_confidence = sum(confidences) / len(confidences)
+
     print("\n -------------- PDF CONTENT ------------\n")
     print(text)
     if not text:
         return
     pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
-    # text_data_path = f"./artifacts/text_data/{pdf_name}.txt"
-    # with open(text_data_path, 'w', encoding='utf-8') as file:
-    #     file.write(text)
+    text_data_path = f"./artifacts/text_data/{pdf_name}.txt"
+    with open(text_data_path, 'w', encoding='utf-8') as file:
+        file.write(text)
+
+    json_data = text
+    if pdf_type == "regular":
+        if not use_gemini:
+            json_data = get_json_structure(text)
+        json_path = f"./artifacts/json_dumps/scanned_pdf_jsons/{pdf_name}.json"
+        with open(json_path, 'w') as json_file:
+            json.dump(json_data, json_file, indent=4)
+    else:
+        if not use_gemini:
+            json_data = get_json_structure_for_scanned_pdf(text)
+        json_path = f"./artifacts/json_dumps/regular_pdf_jsons/{pdf_name}.json"
+        with open(json_path, 'w') as json_file:
+            json.dump(json_data, json_file, indent=4)
+
+    print("\n ------------ Structured JSON format -------------\n")
+    print(json_data)
 
     
-    # json_data = extract_invoice_data(text)
-    # print(json_data)
-    # json_data = get_json_structure(text)
-    # json_data = text
-    # json_path = f"./artifacts/json_dumps/{pdf_name}.json"
-    # with open(json_path, 'w') as json_file:
-    #     json.dump(json_data, json_file, indent=4)
-
-
-    # with open(json_path, 'r') as json_file:
-    #     data = json.load(json_file)
-    # # Printing the JSON data
-    # print(json.dumps(data, indent=4))
 
 
     # validation_result = validate_invoice_fields(text)
@@ -189,13 +196,16 @@ def extract_invoice_data(pdf_path):
     # }
 
 
-extract_invoice_data('./data/Jan to Mar/INV-117_Naman.pdf')
+# extract_invoice_data('./data/Jan to Mar/INV-117_Naman.pdf')
+def main():
+    dir_path = "./data/Jan to Mar"
+    pdf_pattern = os.path.join(dir_path, '*.pdf')
+    # Get a list of all PDF files in the directory
+    pdf_files = glob.glob(pdf_pattern)
+    # Loop through each PDF file and process it
+    for pdf_file in pdf_files:
+        print(pdf_file.split("/")[-1])
+        extract_invoice_data(pdf_file)
 
-# dir_path = "./data/Jan to Mar"
-# pdf_pattern = os.path.join(dir_path, '*.pdf')
-# # Get a list of all PDF files in the directory
-# pdf_files = glob.glob(pdf_pattern)
-# # Loop through each PDF file and process it
-# for pdf_file in pdf_files:
-#     print(pdf_file.split("/")[-1])
-#     extract_invoice_data(pdf_file)
+if __name__ == "__main__":
+    main()
