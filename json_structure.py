@@ -11,7 +11,7 @@ def get_json_structure_for_regular_pdf(text):
     # Extract overall invoice details using regular expressions
     company_name = re.search(r'ORIGINAL FOR RECIPIENT\n([A-Za-z ]+)', text).group(1).strip()
     gst_number = re.search(r'GSTIN\s([A-Z0-9]+)', text).group(1)
-    address = re.search(r'C/o\s(.+?)\sMobile', text, re.DOTALL).group(1).replace("\n", " ").strip()
+    address = re.search(r'C/o\s(.+?)\sMobile', text, re.DOTALL)
     mobile_number = re.search(r'Mobile\s(\+\d+\s\d+)', text).group(1)
     email = re.search(r'Email\s([^\s]+)', text).group(1)
     invoice_number = re.search(r'Invoice\s#:\s([^\n]+)', text).group(1)
@@ -77,7 +77,7 @@ def get_json_structure_for_regular_pdf(text):
     data = {
         "company_name": company_name,
         "gst_number": gst_number,
-        "address": address,
+        "address": address.group(1).replace("\n", " ").strip() if address else 0,
         "mobile_number": mobile_number,
         "email": email,
         "invoice_number": invoice_number,
