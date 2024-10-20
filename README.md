@@ -7,7 +7,6 @@
 ## Repository Outline
 ```
 |-- ./
-    |-- .git/
     |-- .env
     |-- .gitignore
     |-- main.py
