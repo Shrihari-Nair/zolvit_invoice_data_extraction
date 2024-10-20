@@ -33,39 +33,43 @@ def extract_text_from_regular_pdf(pdf_path, use_gemini = True):
             text = gemini_response(snaps_folder_path)
 
     else:
-        """Extract text from regular PDFs using PyPDF2."""
         with open(pdf_path, 'rb') as file:
-            pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
-            image_folder_path = f"./artifacts/images/{pdf_name}/"
-            os.makedirs(image_folder_path, exist_ok=True)
-            reader = PyPDF2.PdfReader(file)
-            text = ""
-            for page in reader.pages:
-                text += page.extract_text()
-            for i in page.images:
-                with open(os.path.join(image_folder_path, i.name), 'wb') as f:
-                    f.write(i.data)
-            print("Tables in the pdf")
-            with pdfplumber.open(pdf_path) as pdf:
-                # iterate over each page
-                for page in pdf.pages:
-                    print(page.extract_tables())
-
-            with pdfplumber.open(pdf_path) as pdf:
-                # iterate over each page
-                for page in pdf.pages:
-                    # extract text
-                    text = page.extract_text()
-            doc = fitz.open(pdf_path)
-            print("Metadata:", doc.metadata)
-            page = doc.load_page(0)
-            text = page.get_text()
+            use_pdfplumber = False
+            use_pypdf2 = False
+            use_pymupdf = True
+            if use_pypdf2:
+                pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
+                image_folder_path = f"./artifacts/images/{pdf_name}/"
+                os.makedirs(image_folder_path, exist_ok=True)
+                reader = PyPDF2.PdfReader(file)
+                text = ""
+                for page in reader.pages:
+                    text += page.extract_text()
+                for i in page.images:
+                    with open(os.path.join(image_folder_path, i.name), 'wb') as f:
+                        f.write(i.data)
+                print("Tables in the pdf")
+                with pdfplumber.open(pdf_path) as pdf:
+                    # iterate over each page
+                    for page in pdf.pages:
+                        print(page.extract_tables())
+            if use_pdfplumber:
+                with pdfplumber.open(pdf_path) as pdf:
+                    # iterate over each page
+                    for page in pdf.pages:
+                        # extract text
+                        text = page.extract_text()
+            if use_pymupdf:
+                doc = fitz.open(pdf_path)
+                print("Metadata:", doc.metadata)
+                page = doc.load_page(0)
+                text = page.get_text()
 
     return text
 
 
 def extract_text_from_scanned_pdf(pdf_path, use_pytesseract = True, use_gemini = True):
-    """Extract text from scanned PDFs using OCR."""
+    """Extract text from scanned PDFs using OCR, tesseract and gemini"""
     images = convert_from_path(pdf_path)
     ocr_text = ""
     if use_pytesseract:
@@ -103,12 +107,7 @@ def extract_text_from_scanned_pdf(pdf_path, use_pytesseract = True, use_gemini =
 
     return ocr_text
 
-def get_ocr_confidence(image):
-    """Get OCR confidence score from the image."""
-    data = pytesseract.image_to_data(image, output_type=pytesseract.Output.DICT)
-    confidences = [int(conf) for conf in data['conf'] if str(conf).isdigit()]
-    avg_confidence = sum(confidences) / len(confidences) if confidences else 0
-    return avg_confidence
+
 
 def validate_invoice_fields(text):
     """Perform basic validation on extracted fields."""
