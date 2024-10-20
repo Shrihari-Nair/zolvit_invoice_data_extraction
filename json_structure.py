@@ -7,7 +7,7 @@ def safe_search(pattern, text, group_idx=1, default_value="0"):
         return match.group(group_idx if group_idx <= match.lastindex else 0)
     return default_value  # Return "0" as a string to prevent AttributeError
 
-def get_json_structure(text):
+def get_json_structure_for_regular_pdf(text):
     # Extract overall invoice details using regular expressions
     company_name = re.search(r'ORIGINAL FOR RECIPIENT\n([A-Za-z ]+)', text).group(1).strip()
     gst_number = re.search(r'GSTIN\s([A-Z0-9]+)', text).group(1)
