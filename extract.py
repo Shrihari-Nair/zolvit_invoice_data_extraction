@@ -136,16 +136,16 @@ def extract_invoice_data(pdf_path):
     if pdf_type == "regular":
         text = extract_text_from_regular_pdf(pdf_path, use_gemini = use_gemini)
     else:
-        text = extract_text_from_scanned_pdf(pdf_path, use_pytesseract = False, use_gemini = False)
+        text = extract_text_from_scanned_pdf(pdf_path, use_pytesseract = False, use_gemini = use_gemini)
 
     print("\n -------------- PDF CONTENT ------------\n")
     print(text)
     if not text:
         return
     pdf_name = os.path.splitext(os.path.basename(pdf_path))[0]
-    text_data_path = f"./artifacts/text_data/{pdf_name}.txt"
-    with open(text_data_path, 'w', encoding='utf-8') as file:
-        file.write(text)
+    # text_data_path = f"./artifacts/text_data/{pdf_name}.txt"
+    # with open(text_data_path, 'w', encoding='utf-8') as file:
+    #     file.write(text)
 
     json_data = text
     if pdf_type == "regular":
