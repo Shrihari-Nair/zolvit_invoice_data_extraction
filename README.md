@@ -49,10 +49,13 @@
 3. Run `python main.py` to extract text and store it in `artifacts/json_dumps`. 
 4. Intermediate outputs are stored in `artifacts/images`, `artifacts/invoice_snaps` and `artifacts/text_data`.
 
-## Accuracy check
-1. Run `python accuracy_check.py` to compare ground truths to the extracted jsons. 
+## Accuracy Check
+1. Run `python accuracy_check.py` to compare ground truths to the extracted jsons. Also add the argument `scanned` or `regular` at the end of the command to check accuracy for the corresponding dataset.
 2. The accuracy report for each PDF is stored in `artifacts/accuracy_values`
 
-## Trust determination
+## Trust Determination
 1. Run `python trust_determination.py` for checking whether the extracted texts can be trusted.
 2. The report will be printed in the console itself. 
+
+## Report
+The Report for the above problem statement is available [here](https://drive.google.com/drive/folders/1cmJV_mq7puPGfpuc1Y0tH-97zEge0dYc?usp=sharing)
