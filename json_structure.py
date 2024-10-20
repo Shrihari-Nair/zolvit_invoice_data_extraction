@@ -109,10 +109,6 @@ def get_json_structure_for_regular_pdf(text):
         }
     }
 
-    # Convert to JSON and output the structured data
-    # json_data = json.dumps(data, indent=4)
-    # print(json_data)
-    # print(type(json_data))
     return data
 
 
